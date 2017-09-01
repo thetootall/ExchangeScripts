@@ -1,3 +1,7 @@
+#Get Exchange Server Versions
+#Be sure Powershell Remoting is enabled
+#To enable on each server run winrm quickconfig
+#Created by Chris Blackburn http://memphistech.net
 
 $exchangeservers = Get-ExchangeServer
  
