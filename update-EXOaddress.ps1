@@ -19,7 +19,7 @@ $updatedisplay = "YES"
 $updateExecute = "YES"
 
 #---------------End the Runtime variables
-If ($dumpuser -eq "YES"){$users = Get-ADUser -SearchBase "OU=Users,OU=ENT,DC=tm,DC=toppanmerrill,DC=com" -Filter {mail -ne $null}}
+If ($dumpuser -eq "YES"){$users = Get-ADUser -SearchBase "OU=Users,OU=ENT,DC=domain,DC=local" -Filter {mail -ne $null}}
 If ($dumpuser -eq "NO"){$users = Import-Csv "SMTPaddlUsers.csv"}
 
 ForEach ($Item in $users){
@@ -49,15 +49,15 @@ $dumparr | out-file $dumpuseroutput -Append}
 If ($updatedisplay -eq "YES"){
 
 #define domain here
-$domain="@ToppanMerrillLLC.com"
+$domain="@domain.com"
 $primail = $myusermail.split("@")[0]
 WRite-host "Address split = $primail" -ForegroundColor Green
 
 #building proxies
 $PriSMTP="SMTP:"
 $AltSMTP="smtp:"
-$OnMS = "@TPNMRL.onmicrosoft.com"
-$OnMS2 = "@tpnmrl.mail.onmicrosoft.com"
+$OnMS = "@tenant.onmicrosoft.com"
+$OnMS2 = "@tenant.mail.onmicrosoft.com"
 $NameDotNo = $myuserfirst + $myuserlast
 $NameDotYes = $myuserfirst + "." + $myuserlast
 $NameDotYes = $NameDotYes.Replace(' ','')
