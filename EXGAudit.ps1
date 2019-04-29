@@ -71,12 +71,15 @@ foreach ($i in $exchangeservers)
             Write-Host " Querying $i"
             Write-Host "----------------------------------------`r`n"
             Write-Host "`r`n"
-
-            $OA = Get-OutlookAnywhere -Server $i -AdPropertiesOnly | Select InternalHostName,ExternalHostName
+            $OA = Get-OutlookAnywhere -Server $i -AdPropertiesOnly | Select InternalHostName,ExternalHostName,ClientAuthenticationMethod,IISAuthenticationMethods,ExternalClientAuthenticationMethod,InternalClientAuthenticationMethod
             Write-Host "Outlook Anywhere"
             Write-Host " - Internal: $($OA.InternalHostName)"
             Write-Host " - External: $($OA.ExternalHostName)"
-            Write-Host "`r`n"
+	    Write-host " - Client Auth (Exchange 2010): $($OA.ClientAuthenticationMethod)"
+	    Write-host " - Internal Client Auth (Exchange 2013): $($OA.InternalClientAuthenticationMethod)"
+	    Write-host " - External Client Auth (Exchange 2013): $($OA.ExternalClientAuthenticationMethod)"
+	    Write-host " - IIS Auth: $($OA.IISAuthenticationMethods)"
+            Write-Host "`r
 
             $OWA = Get-OWAVirtualDirectory -Server $i -AdPropertiesOnly | Select InternalURL,ExternalURL
             Write-Host "Outlook Web App"
@@ -128,8 +131,24 @@ foreach ($i in $exchangeservers)
     }
 stop-transcript
 
+Write-host "Processing master user list, please wait..." -BackgroundColor White -ForegroundColor Black
+Get-Mailbox -Resultsize Unlimited | select displayname,samaccountname,alias,primarysmtpadress | export-csv mbx-alluser.csv -notype
+$alluser = import-csv mbx-alluser.csv
+
 Write-Host "Pull mailbox + db sizes (mailbox report)" -BackgroundColor Green -ForegroundColor Black
-Get-Mailbox -Resultsize Unlimited | Get-MailboxStatistics | select-object DisplayName, alias, Database, {$_.TotalItemSize.Value.ToMB()}, ItemCount, {$_.TotalDeletedItemSize.Value.ToMB()}, DeletedItemCount, OrganizationalUnit, LastLogonTime | Export-CSV mbxDBsize.csv -notype
+#Added logic for percentage bar and read from master list plus output each user at a time
+#Get-Mailbox -Resultsize Unlimited | Get-MailboxStatistics | select-object DisplayName, alias, Database, {$_.TotalItemSize.Value.ToMB()}, ItemCount, {$_.TotalDeletedItemSize.Value.ToMB()}, DeletedItemCount, OrganizationalUnit, LastLogonTime | Export-CSV mbxDBsize.csv -notype
+
+$numstat = 0
+foreach ($i in $alluser){
+$myuser = $i.samaccountname
+$mydisp = $i.displayname
+Write-host "Reading info for $mydisp"
+#Output the details and show progress
+Get-MailboxStatistics $myuser | select-object DisplayName, Database, {$_.TotalItemSize.Value.ToMB()}, ItemCount, {$_.TotalDeletedItemSize.Value.ToMB()}, DeletedItemCount, OrganizationalUnit, LastLogonTime | Export-CSV mbxDBsize.csv -append
+Write-Progress -Activity "Outputting User Statistics" -Status "Progress:" -PercentComplete ($numstat/$alluser.count*100)
+$numstat = $numstat+1
+}
 
 Write-Host "Pull quotas, policies (policy report)" -BackgroundColor Green -ForegroundColor Black
 Get-Mailbox -Resultsize Unlimited | select-object Displayname, Alias, PrimarySMTPAddress, UserPrincipalName, RecipientTypeDetails, OrganizationalUnit, UseDatabaseQuotaDefaults, EmailAddressPolicyEnabled, *Litigation*, InPlaceHolds, RetentionPolicy, ManagedFolderMailboxPolicy, WhenMailboxCreated | Export-CSV mbxPOLICYlist.csv -notype
@@ -141,7 +160,21 @@ Write-Host "Pull Remote IP ranges for Receive connectors (remoteips)" -Backgroun
 Get-ReceiveConnector | Select server,name -expandproperty RemoteIPRanges | Sort Name | Export-CSV remoteip.csv –notype
 
 Write-Host "Pull Mailbox Full Access Permissions List" -BackgroundColor Green -ForegroundColor Black
-Get-Mailbox -Resultsize Unlimited | Get-MailboxPermission | where {$_.user.tostring() -ne "NT AUTHORITY\SELF" -and $_.IsInherited -eq $false} | Select Identity,User,@{Name='Access Rights';Expression={[string]::join(', ', $_.AccessRights)}} | Export-Csv -NoTypeInformation mbxACLsource.csv
+#Added logic for percentage bar and read from master list plus output each user at a time
+#Get-Mailbox -ResultSize unlimited | Get-CalendarProcessing | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=’ResourceDelegates’;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv 
+$numperm = 0
+foreach ($in in $alluser){
+$mypermuser = $in.samaccountname
+$mypermdisp = $in.displayname
+Write-host "Reading info for $mypermdisp"
+#Output the details and show progress
+
+Get-MailboxPermission $mypermuser | where {$_.user.tostring() -ne "NT AUTHORITY\SELF" -and $_.IsInherited -eq $false} | Select Identity,User,@{Name='Access Rights';Expression={[string]::join(', ', $_.AccessRights)}} | Export-Csv -NoTypeInformation mbxACLsource.csv -append
+Write-Progress -Activity "Outputting User Statistics" -Status "Progress:" -PercentComplete ($numperm/$alluser.count*100)
+$numperm = $numperm+1
+}
+
+
 
 Write-Host "Pull Mailbox Delegate Permissions List" -BackgroundColor Green -ForegroundColor Black
 Get-Mailbox -ResultSize unlimited | Get-CalendarProcessing | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=’ResourceDelegates’;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv 
