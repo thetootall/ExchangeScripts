@@ -132,7 +132,7 @@ foreach ($i in $exchangeservers)
 stop-transcript
 
 Write-host "Processing master user list, please wait..." -BackgroundColor White -ForegroundColor Black
-Get-Mailbox -Resultsize Unlimited | select displayname,samaccountname,alias,primarysmtpadress | export-csv mbx-alluser.csv -notype
+Get-Mailbox -Resultsize Unlimited | select displayname,samaccountname,alias,primarysmtpadress | sort-object displayname | export-csv mbx-alluser.csv -notype
 $alluser = import-csv mbx-alluser.csv
 
 Write-Host "Pull mailbox + db sizes (mailbox report)" -BackgroundColor Green -ForegroundColor Black
@@ -144,6 +144,7 @@ foreach ($i in $alluser){
 $myuser = $i.samaccountname
 $mydisp = $i.displayname
 Write-host "Reading info for $mydisp"
+
 #Output the details and show progress
 Get-MailboxStatistics $myuser | select-object DisplayName, Database, {$_.TotalItemSize.Value.ToMB()}, ItemCount, {$_.TotalDeletedItemSize.Value.ToMB()}, DeletedItemCount, OrganizationalUnit, LastLogonTime | Export-CSV mbxDBsize.csv -append
 Write-Progress -Activity "Outputting User Statistics" -Status "Progress:" -PercentComplete ($numstat/$alluser.count*100)
@@ -158,8 +159,8 @@ foreach ($in in $alluser){
 $mypermuser = $in.samaccountname
 $mypermdisp = $in.displayname
 Write-host "Reading info for $mypermdisp"
-#Output the details and show progress
 
+#Output the details and show progress
 Get-MailboxPermission $mypermuser | where {$_.user.tostring() -ne "NT AUTHORITY\SELF" -and $_.IsInherited -eq $false} | Select Identity,User,@{Name='Access Rights';Expression={[string]::join(', ', $_.AccessRights)}} | Export-Csv -NoTypeInformation mbxACLsource.csv -append
 Write-Progress -Activity "Outputting Mailox Full Access Permissions" -Status "Progress:" -PercentComplete ($numperm/$alluser.count*100)
 $numperm = $numperm+1
@@ -173,18 +174,42 @@ foreach ($ind in $alluser){
 $mydeluser = $ind.samaccountname
 $mydeldisp = $ind.displayname
 Write-host "Reading info for $mydeldisp"
-#Output the details and show progress
 
+#Output the details and show progress
 Get-CalendarProcessing $mydeluser | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=’ResourceDelegates’;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv -append
 Write-Progress -Activity "Outputting Mailbox Delegate Permissions" -Status "Progress:" -PercentComplete ($numdell/$alluser.count*100)
 $numperm = $numperm+1
 }
 
 Write-Host "Pull User Archive Mailboxes" -BackgroundColor Green -ForegroundColor Black
-Get-Mailbox -Archive -Resultsize Unlimited | Get-MailboxStatistics | select-object DisplayName, alias, Database, {$_.TotalItemSize.Value.ToMB()}, ItemCount, {$_.TotalDeletedItemSize.Value.ToMB()}, DeletedItemCount, OrganizationalUnit, LastLogonTime | Export-CSV mbxARCsize.csv -notype
+$alluserarc = Get-Mailbox -Archive -Resultsize Unlimited | select displayname,samaccountname
+$numarc = 0
+foreach ($inc in $alluserarc){
+$myarcuser = $inc.samaccountname
+$myarcdisp = $inc.displayname
+Write-host "Reading info for $myarcdisp"
+
+#Output the details and show progress
+Get-MailboxStatistics $myarcuser | select-object DisplayName, alias, Database, {$_.TotalItemSize.Value.ToMB()}, ItemCount, {$_.TotalDeletedItemSize.Value.ToMB()}, DeletedItemCount, OrganizationalUnit, LastLogonTime | Export-CSV mbxARCsize.csv -append
+Write-Progress -Activity "Outputting User Archive Mailboxes" -Status "Progress:" -PercentComplete ($numarc/$alluserarc.count*100)
+$numarc = $numarc+1
+}
+
 
 Write-Host "Pull quotas, policies (policy report)" -BackgroundColor Green -ForegroundColor Black
-Get-Mailbox -Resultsize Unlimited | select-object Displayname, Alias, PrimarySMTPAddress, UserPrincipalName, RecipientTypeDetails, OrganizationalUnit, UseDatabaseQuotaDefaults, EmailAddressPolicyEnabled, *Litigation*, InPlaceHolds, RetentionPolicy, ManagedFolderMailboxPolicy, WhenMailboxCreated | Export-CSV mbxPOLICYlist.csv -notype
+$alluserpol = Get-Mailbox -Archive -Resultsize Unlimited | select displayname,samaccountname
+#Added logic for percentage bar and read from master list plus output each user at a time
+$numpol = 0
+foreach ($inp in $alluserpol){
+$mypoluser = $inp.samaccountname
+$mypoldisp = $inp.displayname
+Write-host "Reading info for $mypoldisp"
+
+#Output the details and show progress
+Get-Mailbox $mypoluser | select-object Displayname, Alias, PrimarySMTPAddress, UserPrincipalName, RecipientTypeDetails, OrganizationalUnit, UseDatabaseQuotaDefaults, EmailAddressPolicyEnabled, *Litigation*, InPlaceHolds, RetentionPolicy, ManagedFolderMailboxPolicy, WhenMailboxCreated | Export-CSV mbxPOLICYlist.csv -append
+Write-Progress -Activity "Outputting User Mailbox Policies" -Status "Progress:" -PercentComplete ($numpol/$alluserpol.count*100)
+$numpol = $numpol+1
+}
 
 Write-Host "Pull all recipient types of Group (group)" -BackgroundColor Green -ForegroundColor Black
 Get-Recipient -ResultSize Unlimited | ?{$_.RecipientType -like "*group*"} | select name, recipienttype, OrganizationalUnit, primarysmtpaddress | export-csv dllist.csv –notype
