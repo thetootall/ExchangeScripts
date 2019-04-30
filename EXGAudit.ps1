@@ -150,15 +150,6 @@ Write-Progress -Activity "Outputting User Statistics" -Status "Progress:" -Perce
 $numstat = $numstat+1
 }
 
-Write-Host "Pull quotas, policies (policy report)" -BackgroundColor Green -ForegroundColor Black
-Get-Mailbox -Resultsize Unlimited | select-object Displayname, Alias, PrimarySMTPAddress, UserPrincipalName, RecipientTypeDetails, OrganizationalUnit, UseDatabaseQuotaDefaults, EmailAddressPolicyEnabled, *Litigation*, InPlaceHolds, RetentionPolicy, ManagedFolderMailboxPolicy, WhenMailboxCreated | Export-CSV mbxPOLICYlist.csv -notype
-
-Write-Host "Pull all recipient types of Group (group)" -BackgroundColor Green -ForegroundColor Black
-Get-Recipient -ResultSize Unlimited | ?{$_.RecipientType -like "*group*"} | select name, recipienttype, OrganizationalUnit, primarysmtpaddress | export-csv dllist.csv –notype
-
-Write-Host "Pull Remote IP ranges for Receive connectors (remoteips)" -BackgroundColor Green -ForegroundColor Black
-Get-ReceiveConnector | Select server,name -expandproperty RemoteIPRanges | Sort Name | Export-CSV remoteip.csv –notype
-
 Write-Host "Pull Mailbox Full Access Permissions List" -BackgroundColor Green -ForegroundColor Black
 #Added logic for percentage bar and read from master list plus output each user at a time
 #Get-Mailbox -ResultSize unlimited | Get-CalendarProcessing | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=’ResourceDelegates’;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv 
@@ -170,17 +161,36 @@ Write-host "Reading info for $mypermdisp"
 #Output the details and show progress
 
 Get-MailboxPermission $mypermuser | where {$_.user.tostring() -ne "NT AUTHORITY\SELF" -and $_.IsInherited -eq $false} | Select Identity,User,@{Name='Access Rights';Expression={[string]::join(', ', $_.AccessRights)}} | Export-Csv -NoTypeInformation mbxACLsource.csv -append
-Write-Progress -Activity "Outputting User Statistics" -Status "Progress:" -PercentComplete ($numperm/$alluser.count*100)
+Write-Progress -Activity "Outputting Mailox Full Access Permissions" -Status "Progress:" -PercentComplete ($numperm/$alluser.count*100)
 $numperm = $numperm+1
 }
 
-
-
 Write-Host "Pull Mailbox Delegate Permissions List" -BackgroundColor Green -ForegroundColor Black
-Get-Mailbox -ResultSize unlimited | Get-CalendarProcessing | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=’ResourceDelegates’;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv 
+#Added logic for percentage bar and read from master list plus output each user at a time
+#Get-Mailbox -ResultSize unlimited | Get-CalendarProcessing | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=’ResourceDelegates’;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv 
+$numdell = 0
+foreach ($ind in $alluser){
+$mydeluser = $ind.samaccountname
+$mydeldisp = $ind.displayname
+Write-host "Reading info for $mydeldisp"
+#Output the details and show progress
+
+Get-CalendarProcessing $mydeluser | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=’ResourceDelegates’;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv -append
+Write-Progress -Activity "Outputting Mailbox Delegate Permissions" -Status "Progress:" -PercentComplete ($numdell/$alluser.count*100)
+$numperm = $numperm+1
+}
 
 Write-Host "Pull User Archive Mailboxes" -BackgroundColor Green -ForegroundColor Black
 Get-Mailbox -Archive -Resultsize Unlimited | Get-MailboxStatistics | select-object DisplayName, alias, Database, {$_.TotalItemSize.Value.ToMB()}, ItemCount, {$_.TotalDeletedItemSize.Value.ToMB()}, DeletedItemCount, OrganizationalUnit, LastLogonTime | Export-CSV mbxARCsize.csv -notype
+
+Write-Host "Pull quotas, policies (policy report)" -BackgroundColor Green -ForegroundColor Black
+Get-Mailbox -Resultsize Unlimited | select-object Displayname, Alias, PrimarySMTPAddress, UserPrincipalName, RecipientTypeDetails, OrganizationalUnit, UseDatabaseQuotaDefaults, EmailAddressPolicyEnabled, *Litigation*, InPlaceHolds, RetentionPolicy, ManagedFolderMailboxPolicy, WhenMailboxCreated | Export-CSV mbxPOLICYlist.csv -notype
+
+Write-Host "Pull all recipient types of Group (group)" -BackgroundColor Green -ForegroundColor Black
+Get-Recipient -ResultSize Unlimited | ?{$_.RecipientType -like "*group*"} | select name, recipienttype, OrganizationalUnit, primarysmtpaddress | export-csv dllist.csv –notype
+
+Write-Host "Pull Remote IP ranges for Receive connectors (remoteips)" -BackgroundColor Green -ForegroundColor Black
+Get-ReceiveConnector | Select server,name -expandproperty RemoteIPRanges | Sort Name | Export-CSV remoteip.csv –notype
 
 Write-Host "Pull Mailbox Databases sizes + white space" -BackgroundColor Green -ForegroundColor Black
 Get-MailboxDatabase -Status | sort name | select name,@{Name='DB Size (Gb)';Expression={$_.DatabaseSize.ToGb()}},@{Name='Available New Mbx Space Gb)';Expression={$_.AvailableNewMailboxSpace.ToGb()}} | Export-csv mdb-size.csv –notype
