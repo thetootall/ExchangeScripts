@@ -197,17 +197,16 @@ $numarc = $numarc+1
 
 
 Write-Host "Pull quotas, policies (policy report)" -BackgroundColor Green -ForegroundColor Black
-$alluserpol = Get-Mailbox -Archive -Resultsize Unlimited | select displayname,samaccountname
 #Added logic for percentage bar and read from master list plus output each user at a time
 $numpol = 0
-foreach ($inp in $alluserpol){
+foreach ($inp in $alluser){
 $mypoluser = $inp.samaccountname
 $mypoldisp = $inp.displayname
 Write-host "Reading info for $mypoldisp"
 
 #Output the details and show progress
 Get-Mailbox $mypoluser | select-object Displayname, Alias, PrimarySMTPAddress, UserPrincipalName, RecipientTypeDetails, OrganizationalUnit, UseDatabaseQuotaDefaults, EmailAddressPolicyEnabled, *Litigation*, InPlaceHolds, RetentionPolicy, ManagedFolderMailboxPolicy, WhenMailboxCreated | Export-CSV mbxPOLICYlist.csv -append
-Write-Progress -Activity "Outputting User Mailbox Policies" -Status "Progress:" -PercentComplete ($numpol/$alluserpol.count*100)
+Write-Progress -Activity "Outputting User Mailbox Policies" -Status "Progress:" -PercentComplete ($numpol/$alluser.count*100)
 $numpol = $numpol+1
 }
 
