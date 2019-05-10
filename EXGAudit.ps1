@@ -220,7 +220,7 @@ Write-Host "Pull Mailbox Databases sizes + white space" -BackgroundColor Green -
 Get-MailboxDatabase -Status | sort name | select name,@{Name='DB Size (Gb)';Expression={$_.DatabaseSize.ToGb()}},@{Name='Available New Mbx Space Gb)';Expression={$_.AvailableNewMailboxSpace.ToGb()}} | Export-csv mdb-size.csv –notype
 
 Write-Host "Pull Database Core Data" -BackgroundColor Green -ForegroundColor Black
-Get-MailboxDatabase | select Name, Server, JournalRecipient, OfflineAddressBook, PublicFolderDatabase, IsExcludedFromProvisioning, IsSuspendedFromProvisioning, EdbFilePath, LogFolderPath, CircularLoggingEnabled, rpcClientAccessServer, DeletedItesRetention | export-csv mbd-stat.csv -notype
+Get-MailboxDatabase | select Name, Server, JournalRecipient, OfflineAddressBook, PublicFolderDatabase, IsExcludedFromProvisioning, IsSuspendedFromProvisioning, EdbFilePath, LogFolderPath, CircularLoggingEnabled, rpcClientAccessServer, DeletedItemRetention, SendReceiveQuota, SendQuota, WarningQuota | export-csv mbd-stat.csv -notype
 
 Write-Host "Pull DAG Name" -BackgroundColor Green -ForegroundColor Black
 Get-DatabaseAvailabilityGroup | select name,*network*,*activation* | Export-Csv DAGinfo.csv –notype
