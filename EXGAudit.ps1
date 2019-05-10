@@ -216,6 +216,9 @@ Get-Recipient -ResultSize Unlimited | ?{$_.RecipientType -like "*group*"} | sele
 Write-Host "Pull Remote IP ranges for Receive connectors (remoteips)" -BackgroundColor Green -ForegroundColor Black
 Get-ReceiveConnector | Select server,name -expandproperty RemoteIPRanges | Sort Name | Export-CSV remoteip.csv –notype
 
+Write-host "Pull Send Connector information" -BackgroundColor Green -ForegroundColor Black
+Get-SendConnector | list | out-file sendconnector.txt
+
 Write-Host "Pull Mailbox Databases sizes + white space" -BackgroundColor Green -ForegroundColor Black
 Get-MailboxDatabase -Status | sort name | select name,@{Name='DB Size (Gb)';Expression={$_.DatabaseSize.ToGb()}},@{Name='Available New Mbx Space Gb)';Expression={$_.AvailableNewMailboxSpace.ToGb()}} | Export-csv mdb-size.csv –notype
 
