@@ -99,9 +99,10 @@ foreach ($i in $exchangeservers)
             Write-Host " - External: $($OAB.ExternalURL)"
             Write-Host "`r`n"
 
-            $EWS = Get-WebServicesVirtualDirectory -Server $i -AdPropertiesOnly | Select InternalURL,ExternalURL
+            $EWS = Get-WebServicesVirtualDirectory -Server $i -AdPropertiesOnly | Select InternalNLBBypassUrl,InternalURL,ExternalURL
             Write-Host "Exchange Web Services"
-            Write-Host " - Internal: $($EWS.InternalURL)"
+            Write-Host " - InternalNLBBypassUrl: $($EWS.InternalNLBBypassUrl)"
+	    Write-Host " - Internal: $($EWS.InternalURL)"
             Write-Host " - External: $($EWS.ExternalURL)"
             Write-Host "`r`n"
 
