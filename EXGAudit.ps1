@@ -79,7 +79,7 @@ foreach ($i in $exchangeservers)
 	    Write-host " - Internal Client Auth (Exchange 2013): $($OA.InternalClientAuthenticationMethod)"
 	    Write-host " - External Client Auth (Exchange 2013): $($OA.ExternalClientAuthenticationMethod)"
 	    Write-host " - IIS Auth: $($OA.IISAuthenticationMethods)"
-            Write-Host "`r
+            Write-Host "`r`n"
 
             $OWA = Get-OWAVirtualDirectory -Server $i -AdPropertiesOnly | Select InternalURL,ExternalURL
             Write-Host "Outlook Web App"
