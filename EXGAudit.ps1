@@ -177,7 +177,7 @@ $mydeldisp = $ind.displayname
 Write-host "Reading info for $mydeldisp"
 
 #Output the details and show progress
-Get-CalendarProcessing $mydeluser | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=â€™ResourceDelegatesâ€™;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv -append
+Get-CalendarProcessing $mydeluser | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name="ResourceDelegates";Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv -append
 Write-Progress -Activity "Outputting Mailbox Delegate Permissions" -Status "Progress:" -PercentComplete ($numdell/$alluser.count*100)
 $numperm = $numperm+1
 }
