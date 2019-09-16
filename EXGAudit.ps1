@@ -133,7 +133,7 @@ foreach ($i in $exchangeservers)
 stop-transcript
 
 Write-host "Processing master user list, please wait..." -BackgroundColor White -ForegroundColor Black
-Get-Mailbox -Resultsize Unlimited | select displayname,samaccountname,alias,primarysmtpadress | sort-object displayname | export-csv mbx-alluser.csv -notype
+Get-Mailbox -Resultsize Unlimited | select displayname,samaccountname,alias,primarysmtpaddress | sort-object displayname | export-csv mbx-alluser.csv -notype
 $alluser = import-csv mbx-alluser.csv
 
 Write-Host "Pull mailbox + db sizes (mailbox report)" -BackgroundColor Green -ForegroundColor Black
@@ -183,7 +183,7 @@ $numperm = $numperm+1
 }
 
 Write-Host "Pull User Archive Mailboxes" -BackgroundColor Green -ForegroundColor Black
-$alluserarc = Get-Mailbox -Archive -Resultsize Unlimited | select displayname,samaccountname | sort-order displayname
+$alluserarc = Get-Mailbox -Archive -Resultsize Unlimited | select displayname,samaccountname | Sort-Object displayname
 $numarc = 0
 foreach ($inc in $alluser){
 $myarcuser = $inc.samaccountname
