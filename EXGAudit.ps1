@@ -31,7 +31,7 @@ if ($srv.AdminDisplayVersion -match "Version 15") {$ver = "V15"}
  
     try
     {
-        $installpath = Invoke-Command –Computername $server -ScriptBlock {$env:ExchangeInstallPath} -ErrorAction STOP
+        $installpath = Invoke-Command “Computername $server -ScriptBlock {$env:ExchangeInstallPath} -ErrorAction STOP"
     }
     catch
     {
@@ -75,11 +75,11 @@ foreach ($i in $exchangeservers)
             Write-Host "Outlook Anywhere"
             Write-Host " - Internal: $($OA.InternalHostName)"
             Write-Host " - External: $($OA.ExternalHostName)"
-	    Write-host " - Client Auth (Exchange 2010): $($OA.ClientAuthenticationMethod)"
-	    Write-host " - Internal Client Auth (Exchange 2013): $($OA.InternalClientAuthenticationMethod)"
-	    Write-host " - External Client Auth (Exchange 2013): $($OA.ExternalClientAuthenticationMethod)"
-	    Write-host " - IIS Auth: $($OA.IISAuthenticationMethods)"
-            Write-Host "`r`n"
+	        Write-host " - Client Auth (Exchange 2010): $($OA.ClientAuthenticationMethod)"
+	        Write-host " - Internal Client Auth (Exchange 2013): $($OA.InternalClientAuthenticationMethod)"
+	        Write-host " - External Client Auth (Exchange 2013): $($OA.ExternalClientAuthenticationMethod)"
+	        Write-host " - IIS Auth: $($OA.IISAuthenticationMethods)"
+	        Write-Host "`r`n"
 
             $OWA = Get-OWAVirtualDirectory -Server $i -AdPropertiesOnly | Select InternalURL,ExternalURL
             Write-Host "Outlook Web App"
@@ -102,7 +102,7 @@ foreach ($i in $exchangeservers)
             $EWS = Get-WebServicesVirtualDirectory -Server $i -AdPropertiesOnly | Select InternalNLBBypassUrl,InternalURL,ExternalURL
             Write-Host "Exchange Web Services"
             Write-Host " - InternalNLBBypassUrl: $($EWS.InternalNLBBypassUrl)"
-	    Write-Host " - Internal: $($EWS.InternalURL)"
+	        Write-Host " - Internal: $($EWS.InternalURL)"
             Write-Host " - External: $($EWS.ExternalURL)"
             Write-Host "`r`n"
 
@@ -118,7 +118,7 @@ foreach ($i in $exchangeservers)
             Write-Host " - External: $($EAS.ExternalURL)"
             Write-Host "`r`n"
 
-	    #Depreciated	
+	        #Depreciated	
             #$AutoD = Get-ClientAccessServer $i | Select AutoDiscoverServiceInternalUri
             #Write-Host "Autodiscover"
             #Write-Host " - Internal SCP: $($AutoD.AutoDiscoverServiceInternalUri)"
@@ -154,7 +154,7 @@ $numstat = $numstat+1
 
 Write-Host "Pull Mailbox Full Access Permissions List" -BackgroundColor Green -ForegroundColor Black
 #Added logic for percentage bar and read from master list plus output each user at a time
-#Get-Mailbox -ResultSize unlimited | Get-CalendarProcessing | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=’ResourceDelegates’;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv 
+#Get-Mailbox -ResultSize unlimited | Get-CalendarProcessing | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name="ResourceDelegates";Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv 
 $numperm = 0
 foreach ($in in $alluser){
 $mypermuser = $in.samaccountname
@@ -169,7 +169,7 @@ $numperm = $numperm+1
 
 Write-Host "Pull Mailbox Delegate Permissions List" -BackgroundColor Green -ForegroundColor Black
 #Added logic for percentage bar and read from master list plus output each user at a time
-#Get-Mailbox -ResultSize unlimited | Get-CalendarProcessing | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=’ResourceDelegates’;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv 
+#Get-Mailbox -ResultSize unlimited | Get-CalendarProcessing | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name="ResourceDelegates";Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv 
 $numdell = 0
 foreach ($ind in $alluser){
 $mydeluser = $ind.samaccountname
@@ -177,7 +177,7 @@ $mydeldisp = $ind.displayname
 Write-host "Reading info for $mydeldisp"
 
 #Output the details and show progress
-Get-CalendarProcessing $mydeluser | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=’ResourceDelegates’;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv -append
+Get-CalendarProcessing $mydeluser | where { $_.ResourceDelegates -ne "" } | Select-Object identity,@{Name=â€™ResourceDelegatesâ€™;Expression={[string]::join(",", ($_.ResourceDelegates))}} | Export-csv -Path mbxResourceDelegates.csv -append
 Write-Progress -Activity "Outputting Mailbox Delegate Permissions" -Status "Progress:" -PercentComplete ($numdell/$alluser.count*100)
 $numperm = $numperm+1
 }
@@ -212,22 +212,22 @@ $numpol = $numpol+1
 }
 
 Write-Host "Pull all recipient types of Group (group)" -BackgroundColor Green -ForegroundColor Black
-Get-Recipient -ResultSize Unlimited | ?{$_.RecipientType -like "*group*"} | select name, recipienttype, OrganizationalUnit, primarysmtpaddress | export-csv dllist.csv –notype
+Get-Recipient -ResultSize Unlimited | ?{$_.RecipientType -like "*group*"} | select name, recipienttype, OrganizationalUnit, primarysmtpaddress | export-csv dllist.csv -notype
 
 Write-Host "Pull Remote IP ranges for Receive connectors (remoteips)" -BackgroundColor Green -ForegroundColor Black
-Get-ReceiveConnector | Select server,name -expandproperty RemoteIPRanges | Sort Name | Export-CSV remoteip.csv –notype
+Get-ReceiveConnector | Select server,name -expandproperty RemoteIPRanges | Sort Name | Export-CSV remoteip.csv -notype
 
 Write-host "Pull Send Connector information" -BackgroundColor Green -ForegroundColor Black
 Get-SendConnector | list | out-file sendconnector.txt
 
 Write-Host "Pull Mailbox Databases sizes + white space" -BackgroundColor Green -ForegroundColor Black
-Get-MailboxDatabase -Status | sort name | select name,@{Name='DB Size (Gb)';Expression={$_.DatabaseSize.ToGb()}},@{Name='Available New Mbx Space Gb)';Expression={$_.AvailableNewMailboxSpace.ToGb()}} | Export-csv mdb-size.csv –notype
+Get-MailboxDatabase -Status | sort name | select name,@{Name='DB Size (Gb)';Expression={$_.DatabaseSize.ToGb()}},@{Name='Available New Mbx Space Gb)';Expression={$_.AvailableNewMailboxSpace.ToGb()}} | Export-csv mdb-size.csv -notype
 
 Write-Host "Pull Database Core Data" -BackgroundColor Green -ForegroundColor Black
 Get-MailboxDatabase | select Name, Server, JournalRecipient, OfflineAddressBook, PublicFolderDatabase, IsExcludedFromProvisioning, IsSuspendedFromProvisioning, EdbFilePath, LogFolderPath, CircularLoggingEnabled, rpcClientAccessServer, DeletedItemRetention, SendReceiveQuota, SendQuota, WarningQuota | export-csv mbd-stat.csv -notype
 
 Write-Host "Pull DAG Name" -BackgroundColor Green -ForegroundColor Black
-Get-DatabaseAvailabilityGroup | select name,*network*,*activation* | Export-Csv DAGinfo.csv –notype
+Get-DatabaseAvailabilityGroup | select name,*network*,*activation* | Export-Csv DAGinfo.csv -notype
 
 Write-Host "Pull DAG Network Settings" -BackgroundColor Green -ForegroundColor Black
 Get-DatabaseAvailabilityGroupNetwork | select name, MapiAccessEnabled | Export-csv DAGnetwork.csv -notype
