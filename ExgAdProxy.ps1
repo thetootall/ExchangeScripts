@@ -1,0 +1,2 @@
+#Pulls Exchange mail object details from Active Directory as the source of truth
+Get-ADObject -Filter * -Properties objectclass,mail, msExchRecipientDisplayType,msExchRecipientTypeDetails,proxyaddresses | Select-Object Name, ObjectClass, Mail, @{L = "ExgDispType"; E = { $_.msExchRecipientDisplayType}} , @{L = "ExgTypeDetails"; E = { $_.msExchRecipientDisplayType}} ,@{L = "ProxyAddresses"; E = { $_.ProxyAddresses -join ";"}} | Export-Csv -Path c:\temp\proxyaddresses.csv -NoTypeInformation
