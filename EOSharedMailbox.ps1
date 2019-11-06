@@ -1,5 +1,5 @@
 #Get Shared Mailbox Members into a CSV
-#Chris Blackburn & Chris Jorenby
+#Chris Jorenby
 
 #Change Window Title
 $host.ui.RawUI.WindowTitle = "Get Shared Mailbox Members"
@@ -20,11 +20,10 @@ Connect-MsolService -Credential $UserCredential
 $csvLine = New-Object PSObject
 $csvTable = @()
 
-
 #Get Shared Mailboxes
-$SharedMailboxes = Get-Mailbox -ResultSize Unlimited | where {$_.RecipientTypeDetails -eq "RoomMailbox" -or $_.RecipientTypeDetails -eq "SharedMailbox"}
+$SharedMailboxes = Get-Mailbox -ResultSize Unlimited | where {$_.RecipientTypeDetails -eq "RoomMailbox" -or $_.RecipientTypeDetails -eq "SharedMailbox"} | Select Name, SamAccountName, Office, UserPrincipalName, PrimarySmtpAddress, RecipientType, RecipientTypeDetails, MailTip, Identity, UseDatabaseRetentionDefaults, LitigationHoldEnabled, SingleItemRecoveryEnabled, LitigationHoldDuration, RetentionPolicy, ExchangeUserAccountControl, ResourceCapacity, ResourceCustom, ResourceType, RoomMailboxAccountEnabled, ThrottlingPolicy, RoleAssignmentPolicy, DefaultPublicFolderMailbox, EffectivePublicFolderMailbox, SharingPolicy, RemoteAccountPolicy, MailboxPlan, PersistedCapabilities, SKUAssigned, AuditEnabled, AuditLogAgeLimit, DefaultAuditSet, WhenMailboxCreated, UsageLocation, AccountDisabled, StsRefreshTokensValidFrom, EnforcedTimestamps, HasPicture, HasSpokenName, IsDirSynced, Alias, OrganizationalUnit, CustomAttribute1, CustomAttribute10, CustomAttribute11, CustomAttribute12, CustomAttribute13, CustomAttribute14, CustomAttribute15, CustomAttribute2, CustomAttribute3, CustomAttribute4, CustomAttribute5, CustomAttribute6, CustomAttribute7, CustomAttribute8, CustomAttribute9, ExtensionCustomAttribute1, ExtensionCustomAttribute2, ExtensionCustomAttribute3, ExtensionCustomAttribute4, ExtensionCustomAttribute5, DisplayName, GrantSendOnBehalfTo, HiddenFromAddressListsEnabled
 
-$SharedMailbox | Select Name,SamAccountName,Office,UserPrincipalName,PrimarySmtpAddress,RecipientType,RecipientTypeDetails,MailTip,Identity,UseDatabaseRetentionDefaults,LitigationHoldEnabled,SingleItemRecoveryEnabled,LitigationHoldDuration,RetentionPolicy,ExchangeUserAccountControl,ResourceCapacity,ResourceCustom,ResourceType,RoomMailboxAccountEnabled,ThrottlingPolicy,RoleAssignmentPolicy,DefaultPublicFolderMailbox,EffectivePublicFolderMailbox,SharingPolicy,RemoteAccountPolicy,MailboxPlan,PersistedCapabilities,SKUAssigned,AuditEnabled,AuditLogAgeLimit,DefaultAuditSet,WhenMailboxCreated,UsageLocation,AccountDisabled,StsRefreshTokensValidFrom,EnforcedTimestamps,HasPicture,HasSpokenName,IsDirSynced,Alias,OrganizationalUnit,CustomAttribute1,CustomAttribute10,CustomAttribute11,CustomAttribute12,CustomAttribute13,CustomAttribute14,CustomAttribute15,CustomAttribute2,CustomAttribute3,CustomAttribute4,CustomAttribute5,CustomAttribute6,CustomAttribute7,CustomAttribute8,CustomAttribute9,ExtensionCustomAttribute1,ExtensionCustomAttribute2,ExtensionCustomAttribute3,ExtensionCustomAttribute4,ExtensionCustomAttribute5,DisplayName,GrantSendOnBehalfTo,HiddenFromAddressListsEnabled | export-csv ./sharedmbxList.csv -NoTypeInformation
+$SharedMailboxes | export-csv ./sharedmbxList.csv -NoTypeInformation
 
 $SharedMailboxes | foreach {
 	$mailbox = Get-mailbox -Identity $_.Alias -ResultSize Unlimited
