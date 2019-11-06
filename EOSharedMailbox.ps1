@@ -28,6 +28,7 @@ $SharedMailboxes | export-csv ./sharedmbxList.csv -NoTypeInformation
 $SharedMailboxes | foreach {
 	$mailbox = Get-mailbox -Identity $_.Alias -ResultSize Unlimited
 	$members = get-Mailboxpermission -Identity $mailbox.Alias | where {$_.User -like "*@*"}
+	$membersize = 
 	$memcount = $members.count
 	$outname = "Gathering $mailbox Members"
 	$outcount = "Showing $memcount Users"
@@ -36,4 +37,23 @@ $SharedMailboxes | foreach {
 	$outname | out-file ./sharedmbxLog.txt -Append
 	$outcount | out-file ./sharedmbxLog.txt -Append
 	$members | select Identity,User,AccessRights | export-csv ./sharedmbxExport.csv -Append -NoTypeInformation
+
+$mymailbox = $mailbox.DistinguishedName
+$mymailboxstat = $mymailbox | Get-MailboxStatistics | select userprincipalname,displayname,MailboxTypeDetail,lastlogontime,lastlogofftime,ItemCount,TotalItemSize,TotalDeletedItemSize,DeletedItemCount
+
+$mymaildisp = $mymailboxstat.displayname
+$mymailtype = $mymailboxstat.MailboxTypeDetail
+$mymaillogon = $mymailboxstat.lastlogontime
+$mymaillogoff = $mymailboxstat.lastlogofftime
+$mymailsizeitem = $mymailboxstat.ItemCount
+$mymailsizedeleted = $mymailboxstat.DeletedItemCount
+
+$mymailitem = [math]::Round(($mymailboxstat.TotalItemSize.ToString().Split("(")[1].Split(" ")[0].Replace(",","")/1MB),2)
+$mymaildeleted = [math]::Round(($mymailboxstat.TotalDeletedItemSize.ToString().Split("(")[1].Split(" ")[0].Replace(",","")/1MB),2)
+
+$output = "$mymaildisp|$mymailtype|$mymaillogon|$mymaillogoff|$mymailitem|$mymailsizeitem|$mymaildeleted|$mymailsizedeleted"
+
+Write-host $Output
+$output | Out-file ./sharedmbxSize.txt -Append
+
 }
