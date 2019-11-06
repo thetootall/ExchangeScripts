@@ -22,8 +22,13 @@ $csvTable = @()
 
 #Get Shared Mailboxes
 $SharedMailboxes = Get-Mailbox -ResultSize Unlimited | where {$_.RecipientTypeDetails -eq "RoomMailbox" -or $_.RecipientTypeDetails -eq "SharedMailbox"} | Select Name, SamAccountName, Office, UserPrincipalName, PrimarySmtpAddress, RecipientType, RecipientTypeDetails, MailTip, Identity, UseDatabaseRetentionDefaults, LitigationHoldEnabled, SingleItemRecoveryEnabled, LitigationHoldDuration, RetentionPolicy, ExchangeUserAccountControl, ResourceCapacity, ResourceCustom, ResourceType, RoomMailboxAccountEnabled, ThrottlingPolicy, RoleAssignmentPolicy, DefaultPublicFolderMailbox, EffectivePublicFolderMailbox, SharingPolicy, RemoteAccountPolicy, MailboxPlan, PersistedCapabilities, SKUAssigned, AuditEnabled, AuditLogAgeLimit, DefaultAuditSet, WhenMailboxCreated, UsageLocation, AccountDisabled, StsRefreshTokensValidFrom, EnforcedTimestamps, HasPicture, HasSpokenName, IsDirSynced, Alias, OrganizationalUnit, CustomAttribute1, CustomAttribute10, CustomAttribute11, CustomAttribute12, CustomAttribute13, CustomAttribute14, CustomAttribute15, CustomAttribute2, CustomAttribute3, CustomAttribute4, CustomAttribute5, CustomAttribute6, CustomAttribute7, CustomAttribute8, CustomAttribute9, ExtensionCustomAttribute1, ExtensionCustomAttribute2, ExtensionCustomAttribute3, ExtensionCustomAttribute4, ExtensionCustomAttribute5, DisplayName, GrantSendOnBehalfTo, HiddenFromAddressListsEnabled
-
+#Exports Shared Mailbox attributes
 $SharedMailboxes | export-csv ./sharedmbxList.csv -NoTypeInformation
+
+#Creates the Mailbox Size file and header
+$header = "DisplayName|MBType|LastLogon|LastLogoff|TotalItems|TotalSizeInMB|DeletedItems|DeletedItemsInMB"
+Write-host $header
+$header | Out-file ./sharedmbxSize.txt -Append
 
 $SharedMailboxes | foreach {
 	$mailbox = Get-mailbox -Identity $_.Alias -ResultSize Unlimited
