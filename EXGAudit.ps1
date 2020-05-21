@@ -191,7 +191,7 @@ $myarcdisp = $inc.displayname
 Write-host "Reading info for $myarcdisp"
 
 #Output the details and show progress
-Get-MailboxStatistics $myarcuser | select-object DisplayName, alias, Database, {$_.TotalItemSize.Value.ToMB()}, ItemCount, {$_.TotalDeletedItemSize.Value.ToMB()}, DeletedItemCount, OrganizationalUnit, LastLogonTime | Export-CSV mbxARCsize.csv -append
+Get-MailboxStatistics $myarcuserc -Archive | select-object DisplayName, alias, Database, {$_.TotalItemSize.Value.ToMB()}, ItemCount, {$_.TotalDeletedItemSize.Value.ToMB()}, DeletedItemCount, OrganizationalUnit, LastLogonTime | Export-CSV mbxARCsize.csv -append
 Write-Progress -Activity "Outputting User Archive Mailboxes" -Status "Progress:" -PercentComplete ($numarc/$alluser.count*100)
 $numarc = $numarc+1
 }
