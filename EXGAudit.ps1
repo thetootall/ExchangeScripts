@@ -133,8 +133,21 @@ foreach ($i in $exchangeservers)
 stop-transcript
 
 Write-host "Processing master user list, please wait..." -BackgroundColor White -ForegroundColor Black
-Get-Mailbox -Resultsize Unlimited | select displayname,samaccountname,alias,primarysmtpaddress | sort-object displayname | export-csv mbx-alluser.csv -notype
+Get-Mailbox -Resultsize Unlimited | select displayname,samaccountname,alias,windowsemailaddress,userprincipalname | sort-object displayname | export-csv mbx-alluser.csv -notype
 $alluser = import-csv mbx-alluser.csv
+
+Write-Host "Department Data for vlookup" -BackgroundColor Green -ForegroundColor Black
+$alluser = import-csv mbx-alluser.csv
+$numpol = 0
+foreach ($inp in $alluser){
+$mypoluser = $inp.samaccountname
+$mypoldisp = $inp.displayname
+Write-host "Reading info for $mypoldisp"
+#Output the details and show progress
+Get-User $mypoluser | select-object Displayname, Alias, PrimarySMTPAddress, UserPrincipalName, Company, Title, Office, Department, Manager, City | Export-CSV mbx-userINFO.csv -append
+Write-Progress -Activity "Outputting User Mailbox Policies" -Status "Progress:" -PercentComplete ($numpol/$alluser.count*100)
+$numpol = $numpol+1
+}
 
 Write-Host "Pull mailbox + db sizes (mailbox report)" -BackgroundColor Green -ForegroundColor Black
 #Added logic for percentage bar and read from master list plus output each user at a time
