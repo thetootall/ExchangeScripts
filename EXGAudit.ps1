@@ -31,7 +31,7 @@ if ($srv.AdminDisplayVersion -match "Version 15") {$ver = "V15"}
  
     try
     {
-        $installpath = Invoke-Command “Computername $server -ScriptBlock {$env:ExchangeInstallPath} -ErrorAction STOP"
+        $installpath = Invoke-Command "Computername $server -ScriptBlock {$env:ExchangeInstallPath} -ErrorAction STOP"
     }
     catch
     {
