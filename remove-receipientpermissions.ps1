@@ -1,5 +1,6 @@
-#$file = Read-host "type file path (if not in current folder)"
-$list = import-csv "list.csv"
+#CSV will be formatted with one column of header "email" with addresses of Shared mailboxes
+$file = Read-host "type file path (if not in current folder)"
+$list = import-csv $file
 Foreach ($m in $list){
 #start L1
 Write-host $m
