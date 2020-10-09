@@ -4,8 +4,8 @@ $csvlist = import-csv "grouplist.csv"
 ForEach ($item in $csvlist) {
 #start L1
 $g = $item.group
-write-host "Adding permission $e adding $g"
-$mailboxID = Enable-DistributionGroup $g
+write-host "Adding permission for $g"
+Enable-DistributionGroup $g
 Set-ADGroup -Identity $g -GroupScope Universal
 #end L1
 }
