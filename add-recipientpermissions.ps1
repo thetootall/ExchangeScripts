@@ -6,12 +6,18 @@ ForEach ($item in $csvlist) {
 $e = $item.email
 $g = $item.group
 write-host "Adding permission $e adding $g"
+#Exchange Online
 $mailboxID = Get-EXOMailbox -PrimarySmtpAddress $e
+#Exchange On-Prem
+#$mailboxID = Get-Mailbox -Identity $e
 $mailboxID1 = $mailboxID.Identity
 $agree = Read-host "Press Y to Continue"
 If ($agree -eq "Y"){
 #start L2
+#Exchange Online
 Add-RecipientPermission -Identity $mailboxID1 -trustee $g -AccessRights SendAs -confirm:$false
+#Exchange On-Prem
+#Add-ADPermission -Identity $mailboxID1 -User $g -AccessRights ExtendRight -ExtendedRights "Send As" -confirm:$false
 #end L2
 }
 #end L1
