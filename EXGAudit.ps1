@@ -1,3 +1,28 @@
+#Sumamry of items collected
+#Exchange Server build info
+#Exchange Server URLs
+#Exchange Mailbox master list
+#AD User Department Data
+#Exchange mailbox sizes and databases
+#Exchange Mailbox Access permissions
+#Exchange Mailbox Delegate Permissions
+#Exchange Archive Mailboxes
+#Exchange Mailbox Quotas
+#Exchange Recipient Types
+#Exchange Receive Connectors and IP ranges
+#Exchange Send Connectors
+#Exchange Mailbox Database Sizes
+#Exchange Mailbox Database Configuration
+#Exchange DAG configuration
+#Exchange DAG network configuration
+#Exchange DAG activation
+#Exchange Mailbox ActiveSync Devices
+#Exchange Server Certificates
+#Exchange Public Folder Databases
+#Exchange Public Folder Statistics
+#Exchange Retention Policies
+#Exchange Mailbox Holds
+
 Write-host "Please save this file as exch.ps1 on one of your Exchange servers under a new output folder (IE C:\exgstats)" -BackgroundColor White -ForegroundColor Red
 Write-host "Launch Exchange Management Shell and run exch.ps1" -BackgroundColor White -ForegroundColor Red
 Write-host "ZIP the output folder and email back to Concurrency" -BackgroundColor White -ForegroundColor Red
